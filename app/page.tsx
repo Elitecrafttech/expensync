@@ -29,13 +29,17 @@ export default function Home() {
 
     //  Load stored expenses from localStorage on page load
   useEffect(() => {
-    const stored = localStorage.getItem("expens");
-    if (stored) setExpens(JSON.parse(stored));
+    if (typeof window !== "undefined") {
+      const stored = localStorage.getItem("expens");
+      if (stored) setExpens(JSON.parse(stored));
+    }
   }, []);
 
   //  Save expenses to localStorage whenever updated
   useEffect(() => {
-    localStorage.setItem("expens", JSON.stringify(expens));
+    if (typeof window !== "undefined") {
+      localStorage.setItem("expens", JSON.stringify(expens));
+    }
   }, [expens]);
 
 
