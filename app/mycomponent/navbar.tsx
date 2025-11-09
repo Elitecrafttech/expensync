@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select"
 import { useTheme } from "next-themes";
 import { Sun, Moon } from "lucide-react";
@@ -10,6 +10,19 @@ export default function Navbar() {
 
      const [currency, setCurrency] = useState("USD");
      const { theme, setTheme } = useTheme();
+     const [mounted, setMounted] = useState(false);
+
+     useEffect(() => {
+        setMounted(true);
+    }, []);
+
+    if (!mounted) {
+    return (
+      <nav className="flex items-center justify-between px-4 py-2 border-b">
+        <h1 className="font-semibold">Expense Tracker</h1>
+      </nav>
+    );
+  }
 
     return (
         <nav className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 transition-colors duration-300 w-full">
