@@ -59,6 +59,11 @@ export default function Home() {
   const [category, setCategory] = useState("All");
   const [month, setMonth] = useState("January 2024");
   const [currency, setCurrency] = useState("USD");
+  const [isClient, setIsClient] = useState(false);
+
+useEffect(() => {
+  setIsClient(true);
+}, []);
 
 
 
@@ -443,14 +448,14 @@ const budgets = [
           {/* <ResponsiveContainer width="60%" height={160}> */}
           <ResponsiveContainer
             width="50%"
-            height={window.innerWidth < 640 ? 100 : 160} // smaller height
+            height={isClient && window.innerWidth < 640 ? 100 : 160} // smaller height
             className="sm:!w-[45%] sm:!h-[120px]"
           >
             <PieChart>
               <Pie
                 data={spendingByCategory}
-                innerRadius={window.innerWidth < 640 ? 20 : 30}
-                outerRadius={window.innerWidth < 640 ? 30 : 45}
+                innerRadius={isClient && window.innerWidth < 640 ? 20 : 30}
+                outerRadius={isClient && window.innerWidth < 640 ? 30 : 45}
                 paddingAngle={2}
                 dataKey="value"
               >
