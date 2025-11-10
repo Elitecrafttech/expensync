@@ -23,8 +23,8 @@ export default function Sidebar() {
         { name: "Dashboard", icon: LayoutDashboard, href: "/" },
         { name: "Budget", icon: Target, href: "/" },
         { name: "Analytics / Insights", icon: BarChart3, href: "/" },
-        { name: "Expense Details", icon: List, href: "/" },
-        { name: "Add / Edit Expense", icon: PlusCircle, href: "/" },
+        { name: "Expense Details", icon: List, href: "/ExpenseDetails" },
+        { name: "Add Expense", icon: PlusCircle, href: "/addexpenses" },
         { name: "Settings", icon: Settings, href: "/" },
     ];
 

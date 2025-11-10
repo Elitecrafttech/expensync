@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useTheme } from "next-themes";
+import { useRouter } from "next/navigation";
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -11,6 +12,7 @@ import { ResponsiveContainer, PieChart, Pie, Cell, Tooltip, LineChart, Line, XAx
 
 
 export default function HomePage() {
+  const router = useRouter();
 
   // Theme detection for chart colors
   const { theme } = useTheme();
@@ -45,16 +47,24 @@ export default function HomePage() {
 
   // ➕ Add a new expense
   const handleAddExpense = () => {
-    if (!newExpense.description || !newExpense.amount) return;
-    setExpens([...expenses, { ...newExpense, id: Date.now() }]);
-    setNewExpense({
-      description: "",
-      amount: "",
-      currency: "USD",
-      category: "Food",
-      date: "",
-    });
-  };
+  // store the current newExpense data in localStorage
+  localStorage.setItem("pendingExpense", JSON.stringify(newExpense));
+  
+  // then navigate to Add Expense page
+  router.push("/addexpenses");
+};
+
+  // const handleAddExpense = () => {
+  //   if (!newExpense.description || !newExpense.amount) return;
+  //   setExpens([...expenses, { ...newExpense, id: Date.now() }]);
+  //   setNewExpense({
+  //     description: "",
+  //     amount: "",
+  //     currency: "USD",
+  //     category: "Food",
+  //     date: "",
+  //   });
+  // };
 
   const [category, setCategory] = useState("All");
   const [month, setMonth] = useState("January 2024");
@@ -75,6 +85,24 @@ useEffect(() => {
     { desc: "Groceries", amount: 100, currency: "EUR", converted: 108, category: "Shopping" },
     { desc: "Bills", amount: 50, currency: "GBP", converted: 62.5, category: "Bills" },
   ];
+
+  const getCurrencySymbol = (currency: string) => {
+  switch (currency) {
+    case "USD":
+      return "$";
+    case "EUR":
+      return "€";
+    case "GBP":
+      return "£";
+    case "JPY":
+      return "¥";
+    case "NGN":
+      return "₦";
+    default:
+      return "$";
+  }
+};
+
 
   const pieData = [
     { name: "Food", value: 445 },
@@ -220,7 +248,9 @@ const budgets = [
             <div className="flex gap-2 w-full">
               <Input 
               placeholder="Amount"
-               className="w-1/2" 
+              inputMode="numeric"
+              pattern="[0-9]*"
+               className="w-1/2 appearance-none" 
                type="number"
                value={newExpense.amount}
                 onChange={(e) =>
@@ -279,10 +309,7 @@ const budgets = [
 
       {/* Middle Section - Expenses Table */}
       {/* ---------------- MIDDLE SECTION ---------------- */}
-      <div  
-      // className="flex flex-col gap-5 min-w-0"  
-      className="flex flex-col gap-5 min-w-0 flex-1"
-      >
+      <div className="flex flex-col gap-5 min-w-0 flex-1" >
         <Card 
         className="w-full flex flex-col justify-start items-stretch min-w-0"
         // className="w-full max-w-full flex flex-col justify-start items-stretch min-w-0 overflow-x-auto"
@@ -311,9 +338,15 @@ const budgets = [
                 {expenses.map((exp, i) => (
                   <TableRow key={i}>
                     <TableCell>{exp.desc}</TableCell>
-                    <TableCell>${exp.amount}</TableCell>
+                    <TableCell>
+                      {getCurrencySymbol(exp.currency)}
+                      {exp.amount}
+                    </TableCell>
                     <TableCell>{exp.currency}</TableCell>
-                    <TableCell>${exp.converted}</TableCell>
+                    <TableCell>
+                      {getCurrencySymbol("USD")}
+                      {exp.converted}
+                    </TableCell>
                     <TableCell>{exp.category}</TableCell>
                   </TableRow>
                 ))}
