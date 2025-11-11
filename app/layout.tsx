@@ -4,6 +4,7 @@ import "./globals.css";
 import Navbar from "./mycomponent/navbar";
 import { ThemeProvider } from "./theme-provider";
 import Sidebar from "./mycomponent/Sidebar";
+import { ExpenseProvider } from "./context/ExpenseContext";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -31,6 +32,7 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <ThemeProvider attribute="class" defaultTheme="light">
+          <ExpenseProvider>
 
           {/* <Navbar />
           {children} */}
@@ -38,13 +40,13 @@ export default function RootLayout({
 
 
            <div className="flex flex-col min-h-screen">
-          <Navbar />    
-          <div className="flex flex-1 overflow-hidden  min-h-0"  >
-            <Sidebar /> 
-            <main className="flex-1 min-w-0 overflow-y-auto overflow-x-hidden p-[13px] lg:p-6 rounded-[50px] lg:rounded-none">{children}</main>
-          </div>
-        </div>
-
+              <Navbar />    
+              <div className="flex flex-1 overflow-hidden  min-h-0"  >
+                <Sidebar /> 
+                <main className="flex-1 min-w-0 overflow-y-auto overflow-x-hidden p-[13px] lg:p-6 rounded-[50px] lg:rounded-none">{children}</main>
+              </div>
+            </div>
+           </ExpenseProvider>   
         </ThemeProvider>
       </body>
     </html>

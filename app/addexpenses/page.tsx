@@ -5,18 +5,26 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem, } from "@/components/ui/select";
+import { useExpenses } from "../context/ExpenseContext";
+import { useRouter } from "next/navigation";
+import { convert } from "@/lib/exchangeRate";
 
 interface ExpenseData {
-  description: string;
+  desc: string;
   amount: string;
   currency: string;
   category: string;
   date: string;
 }
 
+
+
 const AddExpensePage: React.FC = () => {
+  const { addExpense } = useExpenses();
+  const router = useRouter();
+
   const [newExpense, setNewExpense] = useState<ExpenseData>({
-    description: "",
+    desc: "",
     amount: "",
     currency: "",
     category: "",
@@ -31,16 +39,165 @@ const AddExpensePage: React.FC = () => {
   }
 }, []);
 
+const handleAddExpense = async () => {
+    try {
+      // console.log("🔹 AddExpense clicked");
+      // console.log("📦 New expense input:", newExpense);
 
-  
-  const handleAddExpense = () => {
-    console.log("Expense added:", newExpense);
-    // navigate or save logic here
+      if (!newExpense.desc || !newExpense.amount || !newExpense.currency) {
+        console.warn("⚠️ Missing field:", newExpense);
+        return;
+      }
+
+      const amountNum = Number(newExpense.amount);
+      // console.log("💰 Parsed amount:", amountNum);
+
+      // // ✅ Attempt currency conversion
+      // console.log("🌍 Converting currency...", {
+      //   from: newExpense.currency,
+      //   to: "USD",
+      //   amount: amountNum,
+      // });
+
+      const converted = await convert(amountNum, newExpense.currency, "USD");
+      // console.log("✅ Conversion result from API:", converted);
+
+      const expense = {
+        desc: newExpense.desc,
+        amount: amountNum,
+        currency: newExpense.currency,
+        converted: converted ?? 0,
+        category: newExpense.category || "Uncategorized",
+      };
+
+      // console.log("🧾 Final expense object to add:", expense);
+
+      addExpense(expense);
+      // console.log("✅ Expense added successfully to context");
+
+      // ✅ Save to localStorage too (so it's persistent)
+      const saved = JSON.parse(localStorage.getItem("expenses") || "[]");
+      localStorage.setItem("expenses", JSON.stringify([...saved, expense]));
+      console.log("💾 Saved to localStorage");
+
+      // ✅ Redirect
+      router.push("/ExpenseDetails");
+      // console.log("➡️ Navigated to ExpenseDetailsPage");
+
+      // ✅ Reset state
+      setNewExpense({
+        desc: "",
+        amount: "",
+        currency: "",
+        category: "",
+        date: "",
+      });
+    } catch (err) {
+      console.error("❌ Error adding expense:", err);
+    }
   };
+  
+  // const handleAddExpense = async () => {
+  //   if (!newExpense.desc || !newExpense.amount) return;
+
+  // try {
+  //   // ✅ convert to USD before saving
+  //   const convertedValue = await convert(
+  //     Number(newExpense.amount),
+  //     newExpense.currency,
+  //     "USD"
+  //   );
+
+  //   const expense = {
+  //     desc: newExpense.desc,
+  //     amount: Number(newExpense.amount),
+  //     currency: newExpense.currency,
+  //     converted: convertedValue,
+  //     category: newExpense.category,
+  //     date: newExpense.date,
+  //   };
+
+  //   // ✅ save in context
+  //   addExpense(expense);
+
+  //   // ✅ also save locally for persistence
+  //   const existing = JSON.parse(localStorage.getItem("expenses") || "[]");
+  //   existing.push(expense);
+  //   localStorage.setItem("expenses", JSON.stringify(existing));
+
+  //   // ✅ reset and navigate
+  //   setNewExpense({
+  //     desc: "",
+  //     amount: "",
+  //     currency: "",
+  //     category: "",
+  //     date: "",
+  //   });
+
+  //   window.location.href = "/ExpenseDetails";
+  // } catch (err) {
+  //   console.log("Conversion failed:", err);
+  // }
+
+  // //   if (!newExpense.desc || !newExpense.amount || !newExpense.currency) return;
+
+  // // try {
+  // //   const amountNum = Number(newExpense.amount);
+
+  // //   // 🔹 Convert to USD using ExchangeRate.host
+  // //   const converted = await convert(amountNum, newExpense.currency, "USD");
+
+  // //   addExpense({
+  // //     desc: newExpense.desc,
+  // //     amount: amountNum,
+  // //     currency: newExpense.currency,
+  // //     converted,
+  // //     category: newExpense.category || "Uncategorized",
+  // //   });
+
+  // //   // reset the form
+  // //   setNewExpense({
+  // //     desc: "",
+  // //     amount: "",
+  // //     currency: "",
+  // //     category: "",
+  // //     date: "",
+  // //   });
+
+  // //   // ✅ redirect to ExpenseDetailsPage
+  // //   router.push("/ExpenseDetails");
+  // // } catch (error) {
+  // //   console.error("Failed to add expense:", error);
+  // //   alert("Failed to convert currency. Please try again.");
+  // // }
+
+
+  //   // if (!newExpense.desc || !newExpense.amount) return;
+
+  //   // const amountNum = Number(newExpense.amount);
+  //   // const converted = amountNum; // ✅ (for now, same as amount — can later link to live conversion)
+
+  //   // addExpense({
+  //   //   desc: newExpense.desc,
+  //   //   amount: amountNum,
+  //   //   currency: newExpense.currency || "USD",
+  //   //   converted,
+  //   //   category: newExpense.category || "Uncategorized",
+  //   // });
+
+  //   // setNewExpense({
+  //   //   desc: "",
+  //   //   amount: "",
+  //   //   currency: "",
+  //   //   category: "",
+  //   //   date: "",
+  //   // });
+  //   // router.push("/ExpenseDetails");
+  // };
 
   const handleCancel = () => {
     setNewExpense({
-      description: "",
+      desc: "",
       amount: "",
       currency: "",
       category: "",
@@ -61,9 +218,9 @@ const AddExpensePage: React.FC = () => {
           <Input
             placeholder="🧾 What did you spend on?"
             className="w-full bg-gray-50 dark:bg-gray-700 dark:text-gray-100 border-gray-300 dark:border-gray-600 placeholder:text-gray-400 dark:placeholder:text-gray-400"
-            value={newExpense.description}
+            value={newExpense.desc}
             onChange={(e) =>
-              setNewExpense({ ...newExpense, description: e.target.value })
+              setNewExpense({ ...newExpense, desc: e.target.value })
             }
           />
 

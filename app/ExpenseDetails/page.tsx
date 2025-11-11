@@ -6,6 +6,7 @@ import { Table, TableHeader, TableHead, TableBody, TableRow, TableCell, } from "
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem, } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { useExpenses } from "../context/ExpenseContext";
 
 interface Expense {
   desc: string;
@@ -14,15 +15,15 @@ interface Expense {
   converted: number;
   category: string;
 }
-
 const ExpenseDetailsPage: React.FC = () => {
-  const [expenses, setExpenses] = useState<Expense[]>([
-    { desc: "Lunch", amount: 15, currency: "EUR", converted: 16.2, category: "Food" },
-    { desc: "Movie", amount: 12, currency: "USD", converted: 12, category: "Entertainment" },
-    { desc: "Flight", amount: 5000, currency: "JPY", converted: 35.4, category: "Travel" },
-    { desc: "Groceries", amount: 100, currency: "EUR", converted: 108, category: "Shopping" },
-    { desc: "Bills", amount: 50, currency: "GBP", converted: 62.5, category: "Bills" },
-  ]);
+  const { expenses, setExpenses } = useExpenses();
+  // const [expenses, setExpenses] = useState<Expense[]>([
+  //   { desc: "Lunch", amount: 15, currency: "EUR", converted: 16.2, category: "Food" },
+  //   { desc: "Movie", amount: 12, currency: "USD", converted: 12, category: "Entertainment" },
+  //   { desc: "Flight", amount: 5000, currency: "JPY", converted: 35.4, category: "Travel" },
+  //   { desc: "Groceries", amount: 100, currency: "EUR", converted: 108, category: "Shopping" },
+  //   { desc: "Bills", amount: 50, currency: "GBP", converted: 62.5, category: "Bills" },
+  // ]);
 
   const getCurrencySymbol = (currency: string) => {
   switch (currency) {
@@ -187,7 +188,7 @@ const ExpenseDetailsPage: React.FC = () => {
                       <TableCell className="text-gray-800 dark:text-gray-100">{exp.currency}</TableCell>
                       <TableCell className="text-gray-800 dark:text-gray-100">
                         {getCurrencySymbol("USD")}
-                        {exp.converted}
+                        {exp.converted ? exp.converted.toFixed(2) : "--"}
                     </TableCell>
                       <TableCell className="text-gray-800 dark:text-gray-100">{exp.category}</TableCell>
                       <TableCell className="flex gap-2 justify-center">
