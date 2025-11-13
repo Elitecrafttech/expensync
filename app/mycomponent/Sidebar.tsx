@@ -21,8 +21,8 @@ export default function Sidebar() {
 
     const menuItems = [
         { name: "Dashboard", icon: LayoutDashboard, href: "/" },
-        { name: "Budget", icon: Target, href: "/" },
-        { name: "Analytics / Insights", icon: BarChart3, href: "/" },
+        { name: "Budget", icon: Target, href: "/budget" },
+        { name: "Analytics / Insights", icon: BarChart3, href: "/exchangeinsights" },
         { name: "Expense Details", icon: List, href: "/ExpenseDetails" },
         { name: "Add Expense", icon: PlusCircle, href: "/addexpenses" },
         { name: "Settings", icon: Settings, href: "/" },

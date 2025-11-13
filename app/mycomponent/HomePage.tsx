@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Table, TableHeader, TableHead, TableBody, TableRow, TableCell } from "@/components/ui/table";
 import { ResponsiveContainer, PieChart, Pie, Cell, Tooltip, LineChart, Line, XAxis,  YAxis,  CartesianGrid, BarChart,  Bar,  Legend, AreaChart, Area} from "recharts";
+import { fetchRates } from "@/lib/exchangeRate"
 
 
 export default function HomePage() {
@@ -74,6 +75,23 @@ export default function HomePage() {
 useEffect(() => {
   setIsClient(true);
 }, []);
+
+
+ const [rates, setRates] = useState<Record<string, number> | null>(null);
+
+  useEffect(() => {
+    async function loadRates() {
+      try {
+        const data = await fetchRates("USD");
+        console.log("homepage data in useeffect");
+        
+        setRates(data);
+      } catch (err) {
+        console.log(" Failed to fetch live rates:", err);
+      }
+    }
+    loadRates();
+  }, []);
 
 
 
@@ -182,7 +200,153 @@ const budgets = [
 
       {/* LEFT SIDEBAR */}
       <div className="space-y-6 flex flex-col gap-4">
-        <Card  className="w-full max-w-full flex flex-col justify-start items-stretch min-w-0 overflow-x-auto" >
+        <Card 
+          className="w-full max-w-full flex flex-col justify-start items-stretch min-w-0 overflow-x-auto"
+        >
+          <CardHeader className="pb-2">
+            <CardTitle className="text-base sm:text-lg font-semibold text-left">
+              🌍 Live Exchange Rates
+            </CardTitle>
+          </CardHeader>
+
+          <CardContent className="flex flex-col gap-4 w-full">
+            {rates && Object.keys(rates).length > 0 ? (
+              <div
+                className="max-h-64 overflow-y-auto pr-1 scrollbar-thin scrollbar-thumb-gray-400 dark:scrollbar-thumb-gray-600 scrollbar-track-transparent"
+                style={{
+                  scrollbarWidth: "thin",
+                  scrollbarColor: "#9ca3af transparent",
+                }}
+              >
+                <div className="grid grid-cols-1 lg:grid-cols-1 sm:grid-cols-3 gap-3">
+                  {(() => {
+                    const fallbackSymbols: Record<string, string> = {
+                      USD: "$",
+                      EUR: "€",
+                      GBP: "£",
+                      JPY: "¥",
+                      NGN: "₦",
+                      CAD: "CA$",
+                      AUD: "A$",
+                      INR: "₹",
+                      CNY: "CN¥",
+                      AED: "د.إ",
+                      AFN: "؋",
+                      ALL: "L",
+                      AMD: "֏",
+                      ANG: "ƒ",
+                      AOA: "Kz",
+                      ARS: "$",
+                      AWG: "ƒ",
+                      AZN: "₼",
+                      BDT: "৳",
+                      BHD: ".د.ب",
+                      BIF: "FBu",
+                      BND: "$",
+                      BRL: "R$",
+                      BSD: "$",
+                      BTN: "Nu.",
+                      BWP: "P",
+                      BYN: "Br",
+                      BZD: "$",
+                      CLP: "$",
+                      COP: "$",
+                      CRC: "₡",
+                      CZK: "Kč",
+                      DKK: "kr",
+                      EGP: "£",
+                      HUF: "Ft",
+                      IDR: "Rp",
+                      ILS: "₪",
+                      KES: "KSh",
+                      KRW: "₩",
+                      LKR: "Rs",
+                      MAD: "د.م.",
+                      MXN: "MX$",
+                      MYR: "RM",
+                      NOK: "kr",
+                      NZD: "NZ$",
+                      PHP: "₱",
+                      PKR: "₨",
+                      PLN: "zł",
+                      RUB: "₽",
+                      SEK: "kr",
+                      SGD: "$",
+                      THB: "฿",
+                      TRY: "₺",
+                      TWD: "NT$",
+                      UAH: "₴",
+                      VND: "₫",
+                      XAF: "FCFA",
+                      XCD: "EC$",
+                      XOF: "F CFA",
+                      XPF: "CFPF",
+                      ZAR: "R",
+                      BTC: "₿"
+                    };
+
+                    const priority = [
+                      "EUR", "GBP", "JPY", "CAD", "BTC", "NGN", "AUD", "CHF", "CNY", "INR", "NGN",
+                    ];
+
+                    const entries = Object.entries(rates).map(([pair, value]) => ({
+                      code: pair.replace("USD", ""),
+                      value,
+                    }));
+
+                    const sorted = entries.sort((a, b) => {
+                      const aIndex = priority.indexOf(a.code);
+                      const bIndex = priority.indexOf(b.code);
+                      if (aIndex === -1 && bIndex === -1)
+                        return a.code.localeCompare(b.code);
+                      if (aIndex === -1) return 1;
+                      if (bIndex === -1) return -1;
+                      return aIndex - bIndex;
+                    });
+
+                    return sorted.map(({ code, value }) => {
+                      const formatter = new Intl.NumberFormat("en", {
+                        style: "currency",
+                        currency: code,
+                        currencyDisplay: "symbol",
+                      });
+
+                      let formatted = formatter.format(value);
+                      if (formatted.includes(code) || /^[\d.,]+$/.test(formatted)) {
+                        const fallback = fallbackSymbols[code];
+                        formatted = fallback
+                          ? `${fallback}${value.toFixed(3)}`
+                          : `${code}${value.toFixed(3)}`;
+                      }
+
+                      return (
+                        <div
+                          key={code}
+                          className="flex justify-between items-center border rounded-lg p-2 text-sm bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors overflow-x-auto"
+                        >
+                          <span className="font-medium">USD/{code}</span>
+                        <span className="text-gray-600 dark:text-gray-300">
+                          {(fallbackSymbols[code] || "") + (value < 0.01 ? value.toFixed(6) : value.toFixed(3))}
+                        </span>
+
+                          
+                        </div>
+                      );
+                    });
+                  })()}
+                </div>
+              </div>
+            ) : (
+              <p className="text-sm text-gray-500">Loading live rates...</p>
+            )}
+          </CardContent>
+        </Card>
+
+
+
+
+        {/* i dont need this currently i may use it later on */}
+        {/* <Card  className="w-full max-w-full flex flex-col justify-start items-stretch min-w-0 overflow-x-auto" >
           <CardHeader className="pb-2">
             <CardTitle  className="text-base sm:text-lg font-semibold text-left">Filters</CardTitle>
           </CardHeader>
@@ -228,7 +392,7 @@ const budgets = [
             </div>
 
           </CardContent>
-        </Card>
+        </Card> */}
 
 
         {/* Add Expense */}
