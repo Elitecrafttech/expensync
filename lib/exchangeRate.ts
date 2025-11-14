@@ -19,40 +19,48 @@ export async function fetchRates(base: string = "USD") {
   return data.quotes || {};
 }
 
-/** 🔹 3. Fetch historical rates for a specific date (YYYY-MM-DD) */
-export async function fetchHistoricalRates(base: string = "USD", date: string) {
-  const res = await fetch(`${API_BASE}/${date}?access_key=${API_KEY}&base=${base}`);
-  if (!res.ok) throw new Error("Failed to fetch historical rates");
+export async function fetchHistoricalRates(
+  base: string = "USD",
+  date: string
+) {
+  const url = `${API_BASE}/historical?access_key=${API_KEY}&date=${date}&base=${base}`;
+  const res = await fetch(url);
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(`Failed to fetch historical rates (${res.status}): ${text}`);
+  }
   const data = await res.json();
-  return data.rates || {};
+  return data.quotes || data.rates || {};
 }
 
-/** 🔹 4. Fetch timeseries (range of historical data for trend analysis) */
 export async function fetchTimeSeries(
   base: string = "USD",
   startDate: string,
   endDate: string,
-  symbol: string
+  symbols: string
 ) {
-  const res = await fetch(
-    `${API_BASE}/timeseries?access_key=${API_KEY}&base=${base}&symbols=${symbol}&start_date=${startDate}&end_date=${endDate}`
-  );
-  if (!res.ok) throw new Error("Failed to fetch timeseries data");
+  const url = `${API_BASE}/timeseries?access_key=${API_KEY}&start_date=${startDate}&end_date=${endDate}&base=${base}&symbols=${symbols}`;
+  const res = await fetch(url);
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(`Failed to fetch timeseries data (${res.status}): ${text}`);
+  }
   const data = await res.json();
   return data.rates || {};
 }
 
-/** 🔹 5. Fetch currency change metrics (compare between two dates) */
 export async function fetchChangeMetrics(
   base: string = "USD",
   startDate: string,
   endDate: string,
-  symbol: string
+  symbols: string
 ) {
-  const res = await fetch(
-    `${API_BASE}/change?access_key=${API_KEY}&base=${base}&symbols=${symbol}&start_date=${startDate}&end_date=${endDate}`
-  );
-  if (!res.ok) throw new Error("Failed to fetch change metrics");
+  const url = `${API_BASE}/fluctuation?access_key=${API_KEY}&start_date=${startDate}&end_date=${endDate}&base=${base}&symbols=${symbols}`;
+  const res = await fetch(url);
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(`Failed to fetch change metrics (${res.status}): ${text}`);
+  }
   const data = await res.json();
-  return data.change || {};
+  return data.rates || {};
 }
