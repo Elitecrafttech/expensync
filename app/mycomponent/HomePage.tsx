@@ -10,10 +10,56 @@ import { Button } from "@/components/ui/button";
 import { Table, TableHeader, TableHead, TableBody, TableRow, TableCell } from "@/components/ui/table";
 import { ResponsiveContainer, PieChart, Pie, Cell, Tooltip, LineChart, Line, XAxis,  YAxis,  CartesianGrid, BarChart,  Bar,  Legend, AreaChart, Area} from "recharts";
 import { fetchRates } from "@/lib/exchangeRate"
+import { useExpenses } from "../context/ExpenseContext";
+
 
 
 export default function HomePage() {
+
+
+
+
   const router = useRouter();
+
+  const { expenses } = useExpenses();
+
+// 1. Total expenses (in USD)
+const totalExpenses = expenses.reduce(
+  (sum, e) => sum + Number(e.converted || 0),
+  0
+);
+
+// 2. This month's expenses
+const monthlyTotal = expenses
+  .filter((e) => {
+    const d = new Date(e.date);
+    const now = new Date();
+    return (
+      d.getMonth() === now.getMonth() &&
+      d.getFullYear() === now.getFullYear()
+    );
+  })
+  .reduce((sum, e) => sum + Number(e.converted || 0), 0);
+
+// 3. Top category
+const categoryTotals = expenses.reduce<Record<string, number>>((acc, e) => {
+  const cat = e.category || "Uncategorized";
+  acc[cat] = (acc[cat] || 0) + Number(e.converted || 0);
+  return acc;
+}, {});
+
+const topCategory =
+  Object.keys(categoryTotals).length > 0
+    ? Object.entries(categoryTotals).sort((a, b) => b[1] - a[1])[0][0]
+    : "N/A";
+
+    
+
+
+
+
+
+
 
   // Theme detection for chart colors
   const { theme } = useTheme();
@@ -96,7 +142,7 @@ useEffect(() => {
 
 
 
-  const expenses = [
+  const expensesList = [
     { desc: "Lunch", amount: 15, currency: "EUR", converted: 16.2, category: "Food" },
     { desc: "Movie", amount: 12, currency: "USD", converted: 12, category: "Entertainment" },
     { desc: "Flight", amount: 5000, currency: "JPY", converted: 35.4, category: "Travel" },
@@ -142,11 +188,11 @@ useEffect(() => {
 
 
 
-  // 🧾 Total calculations
-  const totalExpenses = expenses.reduce(
-    (sum, e) => sum + Number(e.amount || 0),
-    0
-  );
+  // // 🧾 Total calculations
+  // const totalExpenses = expensesList.reduce(
+  //   (sum, e) => sum + Number(e.amount || 0),
+  //   0
+  // );
 
 
 
@@ -192,6 +238,33 @@ const budgets = [
     { name: "Entertainment", amount: 230, percent: 45 },
     { name: "Utilities", amount: 200, percent: 80 },
   ];
+
+
+
+
+    // --- inline count-up hook (local, not exported, not imported) ---
+function useCountUp(value: number, duration = 800) {
+  const [display, setDisplay] = useState(0);
+
+  useEffect(() => {
+    let start: number | null = null;
+
+    const step = (timestamp: number) => {
+      if (!start) start = timestamp;
+      const progress = Math.min((timestamp - start) / duration, 1);
+      setDisplay(Number((value * progress).toFixed(0)));
+
+      if (progress < 1) requestAnimationFrame(step);
+    };
+
+    requestAnimationFrame(step);
+  }, [value]);
+
+  return display;
+}
+
+const displayTotal = useCountUp(totalExpenses);
+const displayMonthly = useCountUp(monthlyTotal);
 
 
   return (
@@ -499,7 +572,7 @@ const budgets = [
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {expenses.map((exp, i) => (
+                {expensesList.map((exp, i) => (
                   <TableRow key={i}>
                     <TableCell>{exp.desc}</TableCell>
                     <TableCell>
@@ -540,28 +613,47 @@ const budgets = [
 
       {/* ---------------- RIGHT SIDEBAR ---------------- */}   
       {/* Right Sidebar - Summary */}
-      <div 
-      // className="space-y-6 col-span-1 flex flex-col gap-4 order-2 lg:order-none"
-      className="space-y-6 flex flex-col gap-4"
-      >
+      <div className="space-y-6 flex flex-col gap-4">
         <Card className="w-full max-w-full flex flex-col min-w-0 overflow-x-auto">
           <CardHeader>
             <CardTitle className="text-base sm:text-lg font-semibold text-left">Summary</CardTitle>
           </CardHeader>
+
           <CardContent className="flex flex-col gap-4 lg:gap-1.5 w-full">
-            <p className="text-2xl font-bold">$445</p>
-            <p className="text-gray-600">Total Expenses</p>
-            <p className="text-2xl font-bold">$805</p>
-            <p className="text-gray-600">This Month</p>
-            <p className="text-lg font-semibold mt-3">Shopping</p>
-            <p className="text-gray-600 text-sm">Top Category</p>
+            <div className="flex flex-col p-[8px] rounded-xl bg-gray-50 dark:bg-gray-700/40 shadow-sm">
+              <div className="flex items-center gap-2">
+                <div className="p-2 rounded-full bg-blue-100 dark:bg-blue-900/40">
+                  💰
+                </div>
+                <p className="text-sm text-gray-500">Total Expenses</p>
+              </div>
+              <p className="text-2xl font-bold mt-1">${displayTotal}</p>
+            </div>
+
+            <div className="flex flex-col p-[8px] rounded-xl bg-gray-50 dark:bg-gray-700/40 shadow-sm">
+                <div className="flex items-center gap-2">
+                  <div className="p-2 rounded-full bg-green-100 dark:bg-green-900/40">
+                    📅
+                  </div>
+                  <p className="text-sm text-gray-500">This Month</p>
+                </div>
+                <p className="text-2xl font-bold mt-1">${displayMonthly}</p>
+              </div>
+
+
+            <div className="flex flex-col p-[8px] rounded-xl bg-gray-50 dark:bg-gray-700/40 shadow-sm">
+                <div className="flex items-center gap-2">
+                  <div className="p-2 rounded-full bg-purple-100 dark:bg-purple-900/40">
+                    🏷️
+                  </div>
+                  <p className="text-sm text-gray-500">Top Category</p>
+                </div>
+                <p className="text-lg font-semibold mt-1">{topCategory}</p>
+              </div>
           </CardContent>
 
-          <CardContent>
-            <p className="text-lg font-bold">${totalExpenses}</p>
-            <p className="text-sm text-gray-500">Total Expenses</p>
-          </CardContent>
         </Card>
+
 
         <Card className="w-full max-w-full flex flex-col min-w-0 overflow-x-auto">
           <CardHeader>

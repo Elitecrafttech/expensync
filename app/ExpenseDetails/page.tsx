@@ -10,6 +10,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useExpenses } from "../context/ExpenseContext";
 
+const saveToLocalStorage = (list: any[]) => {
+  localStorage.setItem("expenses", JSON.stringify(list));
+};
+
 // MOCK simple conversion (replace with your real API)
 const mockRates: any = {
   USD: 1,
@@ -25,6 +29,7 @@ interface Expense {
   currency: string;
   converted: number;
   category: string;
+  date?: string;
 }
 
 const ExpenseDetailsPage: React.FC = () => {
@@ -80,6 +85,7 @@ const ExpenseDetailsPage: React.FC = () => {
       const updated = [...expenses];
       updated[editingIndex] = editData;
       setExpenses(updated);
+      saveToLocalStorage(updated);
       setEditingIndex(null);
       setEditData(null);
     }
@@ -87,7 +93,9 @@ const ExpenseDetailsPage: React.FC = () => {
 
   const handleDelete = () => {
     if (confirmDeleteIndex !== null) {
-      setExpenses(expenses.filter((_, i) => i !== confirmDeleteIndex));
+     const updated = expenses.filter((_, i) => i !== confirmDeleteIndex);
+      setExpenses(updated);
+      saveToLocalStorage(updated);
       setConfirmDeleteIndex(null);
     }
   };

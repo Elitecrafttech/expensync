@@ -42,7 +42,7 @@ export default function Navbar() {
                     </SelectContent>
                 </Select>
 
-                <div className="text-lg font-medium">$2,450</div>
+                <div className="text-lg font-medium">$200,450</div>
 
                 <button
                     onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
