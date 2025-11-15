@@ -29,7 +29,7 @@ interface Expense {
   currency: string;
   converted: number;
   category: string;
-  date?: string;
+  date: string;
 }
 
 const ExpenseDetailsPage: React.FC = () => {
